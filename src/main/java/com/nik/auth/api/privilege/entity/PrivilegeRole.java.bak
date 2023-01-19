@@ -1,0 +1,37 @@
+package com.nik.auth.api.privilege.entity;
+
+import javax.persistence.EmbeddedId;
+
+import org.springframework.data.domain.Persistable;
+
+import lombok.Data;
+
+// @Entity
+// @Table(name = "TB_PRIVILEGE_ROLE")
+@Data
+// @IdClass(PrivilegeRolePk.class)
+public class PrivilegeRole implements Persistable<PrivilegeRolePk>{
+
+    @EmbeddedId
+    private PrivilegeRolePk privilegeRolePk;
+
+    // @Id
+    // @ManyToOne
+    // private Privilege privilege;
+
+    // @Id
+    // @ManyToOne
+    // private Role role;
+
+
+    //해당 엔티티는 수정이 없고 오로지 추가 또는 제거만 있기때문에 isNew를 항상 true로 반환하게 합니다.
+    @Override
+    public PrivilegeRolePk getId() {
+        return privilegeRolePk;
+    }
+
+    @Override
+    public boolean isNew() {
+        return true;
+    }
+}

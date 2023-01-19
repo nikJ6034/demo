@@ -1,0 +1,143 @@
+package com.nik.auth.api.privilege.service;
+
+import java.util.List;
+import java.util.Optional;
+
+import javax.transaction.Transactional;
+
+import org.springframework.stereotype.Service;
+
+import com.nik.auth.api.privilege.entity.Privilege;
+import com.nik.auth.api.privilege.entity.PrivilegeGroup;
+import com.nik.auth.api.privilege.entity.PrivilegeRole;
+import com.nik.auth.api.privilege.entity.PrivilegeRolePk;
+import com.nik.auth.api.privilege.repository.PrivilegeGroupRepository;
+import com.nik.auth.api.privilege.repository.PrivilegeRepository;
+import com.nik.auth.api.privilege.repository.PrivilegeRoleRepository;
+import com.nik.auth.api.privilege.vo.PrivilegeGroupVO;
+import com.nik.auth.api.privilege.vo.PrivilegeVO;
+import com.nik.auth.api.privilege.vo.RolePrivilegeVO;
+import com.nik.auth.api.role.dto.RoleDTO;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class PrivilegeService {
+
+    private final PrivilegeRoleRepository privilegeRoleRepository;
+    private final PrivilegeRepository privilegeRepository;
+    private final PrivilegeGroupRepository privilegeGroupRepository;
+
+    public boolean isPrivilege(List<? extends RoleDTO> roleList, String[] role) {
+        return privilegeRepository.isPrivilege(roleList, role);
+    }
+
+    public List<PrivilegeGroupVO> selectPrivilegeGroupList() {
+        return privilegeRepository.selectPrivilegeGroupList();
+    }
+
+    public PrivilegeGroupVO selectPrivilegeGroup(Long privilegeGpId) {
+        return privilegeRepository.selectPrivilegeGroup(privilegeGpId);
+    }
+
+    public List<PrivilegeVO> selectPrivilegeList(Long privilegeGpId){
+        return privilegeRepository.selectPrivilegeList(privilegeGpId);
+    }
+
+    public List<PrivilegeVO> selectPrivilegeListByRoleId(Long roleId) {
+        return privilegeRepository.selectPrivilegeListByRoleId(roleId);
+    }
+
+    public PrivilegeGroup insertPrivilegeGroup(PrivilegeGroup privilegeGroup) {
+
+        return privilegeGroupRepository.save(privilegeGroup);
+
+    }
+
+    public PrivilegeGroup modifyPrivilegeGroup(PrivilegeGroup privilegeGroup) {
+
+        Optional<PrivilegeGroup> findById = privilegeGroupRepository.findById(privilegeGroup.getId());
+        if(findById.isPresent()) {
+            PrivilegeGroup byId = findById.get();
+            byId.setPriGpName(privilegeGroup.getPriGpName());
+            byId.setPriGpDesc(privilegeGroup.getPriGpDesc());
+            return byId;
+        }else {
+            return null;
+        }
+
+    }
+
+    public boolean existsPrivilegeRoleByPrivilegeGroupId(Long privilegeGroupId) {
+        return privilegeRepository.existsPrivilegeRoleByPrivilegeGroupId(privilegeGroupId);
+    }
+
+    public void deletePrivilegeGroup(Long privilegeGroupId) {
+
+        Optional<PrivilegeGroup> findById = privilegeGroupRepository.findById(privilegeGroupId);
+
+        findById.ifPresent(pg-> {
+            privilegeRepository.deleteAll(pg.getPrivilegeList());
+            privilegeGroupRepository.delete(pg);
+        });
+
+    }
+
+    public Privilege insertPrivilege(Privilege privilege) {
+        return privilegeRepository.save(privilege);
+    }
+
+    public Privilege modifyPrivilege(Privilege privilege) {
+
+        Optional<Privilege> findById = privilegeRepository.findById(privilege.getId());
+
+        if(findById.isPresent()) {
+            Privilege privilege2 = findById.get();
+            privilege2.setPriName(privilege.getPriName());
+            privilege2.setPriDesc(privilege.getPriDesc());
+            return privilege2;
+        }else {
+            return null;
+        }
+
+    }
+
+    public void updatePrivilegeRole(RolePrivilegeVO rolePrivilegeVO) {
+
+        RoleDTO roleDTO = rolePrivilegeVO.getRole();
+
+        privilegeRepository.removePrivilegeByRoleId(roleDTO.getId());
+
+        rolePrivilegeVO.getPrivilegeList()
+        .stream()
+        .forEach(privilegeVO -> {
+            PrivilegeRole privilegeRole = new PrivilegeRole();
+            PrivilegeRolePk privilegeRolePk = new PrivilegeRolePk();
+            privilegeRolePk.setPrivilege(privilegeVO.getId());
+            privilegeRolePk.setRole(roleDTO.getId());
+            privilegeRole.setPrivilegeRolePk(privilegeRolePk);
+
+            privilegeRoleRepository.save(privilegeRole);
+
+        });
+    }
+
+    public boolean existsPrivilegeRoleByPrivilegeId(Long privilegeId) {
+        return privilegeRepository.existsPrivilegeRoleByPrivilegeId(privilegeId);
+    }
+
+    public void deletePrivilege(Long privilegeId) {
+        privilegeRepository.deleteById(privilegeId);
+    }
+
+    /**
+     * 업무권한이 존재하는지 확인
+     * @param priValue
+     * @return
+     */
+    public boolean existsByPriValue(String priValue) {
+        return privilegeRepository.existsByPriValue(priValue);
+    }
+}

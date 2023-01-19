@@ -1,0 +1,9 @@
+package com.nik.auth.api.privilege.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.nik.auth.api.privilege.entity.PrivilegeGroup;
+
+public interface PrivilegeGroupRepository extends JpaRepository<PrivilegeGroup, Long>{
+
+}

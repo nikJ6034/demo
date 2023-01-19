@@ -1,0 +1,10 @@
+package com.nik.auth.api.privilege.repository;
+
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.nik.auth.api.privilege.entity.PrivilegeRole;
+import com.nik.auth.api.privilege.entity.PrivilegeRolePk;
+
+public interface PrivilegeRoleRepository extends JpaRepository<PrivilegeRole, PrivilegeRolePk>{
+}

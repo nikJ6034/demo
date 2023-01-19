@@ -1,0 +1,175 @@
+package com.nik.auth.api.privilege.repository;
+
+import static com.querydsl.core.group.GroupBy.groupBy;
+import static com.querydsl.core.group.GroupBy.list;
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
+
+import com.nik.auth.api.privilege.entity.Privilege;
+import com.nik.auth.api.privilege.entity.QPrivilege;
+import com.nik.auth.api.privilege.entity.QPrivilegeGroup;
+import com.nik.auth.api.privilege.entity.QPrivilegeRole;
+import com.nik.auth.api.privilege.vo.PrivilegeGroupVO;
+import com.nik.auth.api.privilege.vo.PrivilegeVO;
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.Projections;
+
+public class PrivilegeRepositoryDslImpl extends QuerydslRepositorySupport implements PrivilegeRepositoryDsl{
+
+    public PrivilegeRepositoryDslImpl() {
+        super(Privilege.class);
+    }
+
+    private Expression<PrivilegeVO> commonProjections(QPrivilege privilege) {
+        return    Projections.bean(PrivilegeVO.class,
+                privilege.id,
+                privilege.priName,
+                privilege.priValue,
+                privilege.priDesc,
+                privilege.privilegeGroup.id.as("privilegeGroupId")
+                );
+    }
+
+    // @Override
+    // public boolean isPrivilege(Set<? extends GrantedAuthority> authorities, String[] role) {
+
+    //     QPrivilegeRole privilegerole = QPrivilegeRole.privilegeRole;
+    //     QPrivilege privilege = QPrivilege.privilege;
+
+    //     List<String> collect = authorities.stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
+
+    //     return from(privilege)
+    //     .innerJoin(privilegerole)
+    //     .on(privilegerole.privilegeRolePk.privilege.eq(privilege.id))
+    //     .where(
+    //             privilegerole.privilegeRolePk.role.in(collect)
+    //             .and(privilege.priValue.in(role))
+    //             )
+    //     .select(commonProjections(privilege))
+    //     .fetchCount() > 0;
+
+    // }
+
+    @Override
+    public List<PrivilegeVO> selectPrivilegeList(Long privilegeGroupId) {
+        QPrivilege privilege = QPrivilege.privilege;
+
+        return from(privilege)
+            .where(privilege.privilegeGroup.id.eq(privilegeGroupId))
+            .select(commonProjections(privilege))
+            .fetch();
+
+    }
+
+    @Override
+    public List<PrivilegeGroupVO> selectPrivilegeGroupList() {
+        QPrivilegeGroup privilegegroup = QPrivilegeGroup.privilegeGroup;
+        QPrivilege privilege = QPrivilege.privilege;
+
+        return from(privilegegroup)
+        .leftJoin(privilege)
+        .on(privilege.privilegeGroup.eq(privilegegroup))
+        .transform(
+            groupBy(privilegegroup.id)
+            .list(
+                Projections.bean(PrivilegeGroupVO.class,
+                    privilegegroup.id,
+                    privilegegroup.priGpName,
+                    privilegegroup.priGpDesc,
+                    list(Projections.bean(PrivilegeVO.class,
+                            privilege.id,
+                            privilege.priDesc,
+                            privilege.priName,
+                            privilege.priValue,
+                            privilege.privilegeGroup.id.as("privilegeGroupId")
+                            ).skipNulls()
+                    ).as("privilegeList")
+                )
+            )
+        );
+    }
+
+    @Override
+    public List<PrivilegeVO> selectPrivilegeListByRoleId(Long roleId) {
+
+        QPrivilegeRole privilegerole = QPrivilegeRole.privilegeRole;
+        QPrivilege privilege = QPrivilege.privilege;
+
+        return from(privilege)
+        .join(privilegerole)
+        .on(privilegerole.privilegeRolePk.privilege.eq(privilege.id))
+        .where(privilegerole.privilegeRolePk.role.eq(roleId))
+        .select(commonProjections(privilege))
+        .fetch();
+    }
+
+    @Override
+    public PrivilegeGroupVO selectPrivilegeGroup(Long privilegeGroupId) {
+        QPrivilegeGroup privilegegroup = QPrivilegeGroup.privilegeGroup;
+        QPrivilege privilege = QPrivilege.privilege;
+
+        return from(privilegegroup)
+        .leftJoin(privilege)
+        .on(privilege.privilegeGroup.eq(privilegegroup))
+        .where(privilegegroup.id.eq(privilegeGroupId))
+        .transform(
+            groupBy(privilegegroup.id)
+            .as(
+                Projections.bean(PrivilegeGroupVO.class,
+                    privilegegroup.id,
+                    privilegegroup.priGpName,
+                    privilegegroup.priGpDesc,
+                    list(Projections.bean(PrivilegeVO.class,
+                            privilege.id,
+                            privilege.priDesc,
+                            privilege.priName,
+                            privilege.priValue,
+                            privilege.privilegeGroup.id.as("privilegeGroupId")
+                            ).skipNulls()
+                    ).as("privilegeList")
+                )
+            )
+        ).get(privilegeGroupId);
+
+    }
+
+    @Override
+    public void removePrivilegeByRoleId(Long roleId) {
+
+        QPrivilegeRole privilegerole = QPrivilegeRole.privilegeRole;
+        delete(privilegerole)
+        .where(privilegerole.privilegeRolePk.role.eq(roleId))
+        .execute();
+
+    }
+
+    @Override
+    public boolean existsPrivilegeRoleByPrivilegeGroupId(Long privilegeGroupId) {
+        QPrivilegeGroup privilegegroup = QPrivilegeGroup.privilegeGroup;
+        QPrivilege privilege = QPrivilege.privilege;
+        QPrivilegeRole privilegerole = QPrivilegeRole.privilegeRole;
+
+        return from(privilegerole)
+        .innerJoin(privilege)
+        .on(privilegerole.privilegeRolePk.privilege.eq(privilege.id))
+        .innerJoin(privilegegroup)
+        .on(privilege.privilegeGroup.eq(privilegegroup))
+        .where(privilegegroup.id.eq(privilegeGroupId))
+        .fetchCount() > 0;
+    }
+
+    @Override
+    public boolean existsPrivilegeRoleByPrivilegeId(String privilegeId) {
+        QPrivilege privilege = new QPrivilege("privilege");
+        QPrivilegeRole privilegerole = new QPrivilegeRole("privilegeRole");
+
+        return from(privilegerole)
+            .innerJoin(privilege)
+            .on(privilegerole.privilegeRolePk.privilege.eq(privilege.id))
+            .where(privilege.id.eq(privilegeId))
+            .fetchCount() > 0;
+    }
+    
+}

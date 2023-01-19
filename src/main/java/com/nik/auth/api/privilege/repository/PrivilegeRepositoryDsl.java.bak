@@ -1,0 +1,29 @@
+package com.nik.auth.api.privilege.repository;
+
+import java.util.List;
+
+import javax.transaction.Transactional;
+
+import com.nik.auth.api.privilege.vo.PrivilegeGroupVO;
+import com.nik.auth.api.privilege.vo.PrivilegeVO;
+
+public interface PrivilegeRepositoryDsl {
+
+    public List<PrivilegeGroupVO> selectPrivilegeGroupList();
+
+    public List<PrivilegeVO> selectPrivilegeList(Long privilegeGroupId);
+
+    //public boolean isPrivilege(List<? extends RoleDTO> roleList, String[] role);
+
+    public List<PrivilegeVO> selectPrivilegeListByRoleId(Long roleId);
+
+    public PrivilegeGroupVO selectPrivilegeGroup(Long privilegeGroupId);
+
+    @Transactional
+    public void removePrivilegeByRoleId(Long roleId);
+
+    public boolean existsPrivilegeRoleByPrivilegeGroupId(Long privilegeGroupId);
+
+    public boolean existsPrivilegeRoleByPrivilegeId(String privilegeId);
+
+}

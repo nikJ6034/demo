@@ -1,0 +1,15 @@
+package com.nik.auth.api.privilege.vo;
+
+import java.util.List;
+
+import com.nik.auth.api.role.dto.RoleDTO;
+
+import lombok.Data;
+
+@Data
+public class RolePrivilegeVO {
+
+    private RoleDTO role;
+
+    List<PrivilegeVO> privilegeList;
+}

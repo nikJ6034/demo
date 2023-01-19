@@ -1,0 +1,16 @@
+package com.nik.auth.api.privilege.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.nik.auth.api.privilege.entity.Privilege;
+
+public interface PrivilegeRepository extends JpaRepository<Privilege, String>, PrivilegeRepositoryDsl{
+
+    /**
+     * 업무권한이 존재하는지 확인
+     * @param priValue
+     * @return
+     */
+    public boolean existsByPriValue(String priValue);
+
+}

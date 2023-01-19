@@ -1,0 +1,46 @@
+package com.nik.auth.api.privilege.vo;
+
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.nik.auth.api.privilege.entity.Privilege;
+import com.nik.auth.api.privilege.entity.PrivilegeGroup;
+
+import lombok.Data;
+
+@Data
+public class PrivilegeVO {
+
+    private String id;
+
+    @NotBlank(message = "업무권한 값을 입력해주세요.")
+    private String priValue;
+
+    @NotBlank(message = "업무권한 이름을 입력해주세요.")
+    private String priName;
+
+    @NotBlank(message = "업무권한 설명을 입력해주세요.")
+    private String priDesc;
+
+    @NotNull(message = "업무권한 그룹을 선택해주세요.")
+    private Long privilegeGroupId;
+
+    @JsonIgnore
+    public Privilege toEntity() {
+        PrivilegeGroup privilegeGroup = new PrivilegeGroup();
+        privilegeGroup.setId(privilegeGroupId);
+
+        Privilege privilege = new Privilege();
+        privilege.setId(id);
+        privilege.setPriValue(priValue);
+        privilege.setPriName(priName);
+        privilege.setPriDesc(priDesc);
+        privilege.setPrivilegeGroup(privilegeGroup);
+
+        return privilege;
+
+    }
+
+
+}
