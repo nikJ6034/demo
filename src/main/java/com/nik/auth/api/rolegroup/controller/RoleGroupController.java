@@ -24,7 +24,7 @@ public class RoleGroupController {
     
     private final RoleGroupService roleGroupService;
 
-    @GetMapping(value="/api/roleGroups1")
+    @GetMapping(value="/api/roleGroups")
     public ResponseEntity<List<RoleGroupDTO.WithoutPrivilegeDTO>> getRoleGroups(){
 
         List<RoleGroupDTO.WithoutPrivilegeDTO> roleGroups = roleGroupService.getRoleGroups();
